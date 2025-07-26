@@ -1,0 +1,7 @@
+.env
+.ddev
+composer.lock
+vendor/
+!.ddev/config.yaml
+
+

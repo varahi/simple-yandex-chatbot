@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yandex GPT Чат-бот</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/markdown.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>Yandex GPT Чат-бот</h1>
+        <p>Отвечаю на вопросы по науке и технологиям</p>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+        <div class="message bot-message">
+            Привет! Я ваш научный помощник. Задавайте вопросы по физике, математике и технологиям.
+        </div>
+    </div>
+
+    <div class="typing-indicator" id="typing-indicator">
+        Бот печатает...
+    </div>
+
+    <div class="chat-input">
+        <input type="text" id="user-input" placeholder="Введите ваш вопрос..." autocomplete="off">
+        <button id="send-button">Отправить</button>
+        <button id="clear-btn" style="background: #ff6b6b;">Очистить историю</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="js/main.js"></script>
+<script src="js/markdown.js"></script>
+
+</body>
+</html>

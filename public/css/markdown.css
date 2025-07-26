@@ -1,0 +1,44 @@
+.message strong {
+    font-weight: 600;
+}
+
+.message em {
+    font-style: italic;
+}
+
+.message del {
+    text-decoration: line-through;
+}
+
+.message code {
+    background: rgba(0,0,0,0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.message pre {
+    background: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+.message h3 {
+    margin: 10px 0;
+    font-size: 1.2em;
+}
+
+.message ul {
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+.message a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.message a:hover {
+    text-decoration: underline;
+}
