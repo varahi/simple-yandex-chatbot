@@ -142,3 +142,18 @@ body {
 #clear-btn:hover {
     background: #ff5252;
 }
+
+.quick-questions button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background: #6f7c28;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.3s;
+}
+.quick-questions {
+    margin-bottom: 20px;
+}

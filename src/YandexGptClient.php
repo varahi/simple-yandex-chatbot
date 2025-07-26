@@ -10,7 +10,8 @@ class YandexGptClient
     private $client;
     private $config;
 
-    public function __construct(array $config) {
+    public function __construct(array $config)
+    {
         $this->config = $config;
         $this->client = new Client([
             'base_uri' => 'https://llm.api.cloud.yandex.net',
@@ -18,7 +19,8 @@ class YandexGptClient
         ]);
     }
 
-    public function sendRequest(array $messages): string {
+    public function sendRequest(array $messages): string
+    {
         $payload = [
             'modelUri' => $this->config['model_uri'],
             'completionOptions' => [

@@ -2,6 +2,8 @@
 .ddev
 composer.lock
 vendor/
+.php-cs-fixer.cache
+php-cs-fixer.phar
+src/_ChatBot_back.php
+
 !.ddev/config.yaml
-
-

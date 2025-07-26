@@ -11,8 +11,8 @@
 <body>
 <div class="chat-container">
     <div class="chat-header">
-        <h1>Yandex GPT Чат-бот</h1>
-        <p>Отвечаю на вопросы по науке и технологиям</p>
+        <h1>Ваш персональный помощник</h1>
+        <p>Отвечаю на вопросы нашего магазина</p>
     </div>
 
     <div class="chat-messages" id="chat-messages">
@@ -20,6 +20,19 @@
             Привет! Я ваш научный помощник. Задавайте вопросы по физике, математике и технологиям.
         </div>
     </div>
+
+    <div class="quick-questions">
+        <button onclick="sendQuickQuestion('как сделать заказ')">Как заказать?</button>
+        <button onclick="sendQuickQuestion('способы оплаты')">Оплата</button>
+        <button onclick="sendQuickQuestion('сроки доставки')">Доставка</button>
+    </div>
+
+    <script>
+        function sendQuickQuestion(question) {
+            document.getElementById('user-input').value = question;
+            sendMessage();
+        }
+    </script>
 
     <div class="typing-indicator" id="typing-indicator">
         Бот печатает...
