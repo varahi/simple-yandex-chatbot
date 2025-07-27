@@ -1,16 +1,14 @@
 <?php
 
-use src\Factories\ChatBotFactory;
-use src\Services\FaqService;
+use App\Factories\ChatBotFactory;
 
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit; // Для CORS preflight
+}
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=utf-8');
-
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../src/ChatBot.php';
-require_once __DIR__ . '/../src/Services/FaqService.php';
-require_once __DIR__ . '/../src/Factories/ChatBotFactory.php';
 
 try {
     // Кэширование конфигов
@@ -18,9 +16,6 @@ try {
         static $config;
         return $config ??= include __DIR__ . '/../config/config.php';
     })();
-
-    $faq = include __DIR__ . '/../config/faq.php';
-    $faqService = new FaqService($faq);
 
     // Create bot
     $bot = ChatBotFactory::create();

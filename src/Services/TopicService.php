@@ -1,6 +1,6 @@
 <?php
 
-namespace src\Services;
+namespace App\Services;
 
 class TopicService
 {

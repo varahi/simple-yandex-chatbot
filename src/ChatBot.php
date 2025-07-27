@@ -1,10 +1,10 @@
 <?php
 
-namespace src;
+namespace App;
 
-use src\Contracts\MessagePreparerInterface;
-use src\Services\HistoryService;
-use src\Services\TopicService;
+use App\Contracts\MessagePreparerInterface;
+use App\Services\HistoryService;
+use App\Services\TopicService;
 
 class ChatBot
 {

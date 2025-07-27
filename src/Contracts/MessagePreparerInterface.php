@@ -1,6 +1,6 @@
 <?php
 
-namespace src\Contracts;
+namespace App\Contracts;
 
 interface MessagePreparerInterface
 {

@@ -1,23 +1,22 @@
 <?php
 
-namespace src\Factories;
+namespace App\Factories;
 
-use src\ChatBot;
-use src\Services\FaqService;
-use src\Services\HistoryService;
-use src\Services\MessagePreparationService;
-use src\Services\TopicService;
-use src\YandexGptClient;
+use App\ChatBot;
+use App\Services\FaqService;
+use App\Services\HistoryService;
+use App\Services\MessagePreparationService;
+use App\Services\TopicService;
+use App\YandexGptClient;
 
 class ChatBotFactory
 {
     public static function create(): ChatBot
     {
-        $config = include __DIR__ . '/../../config/config.php';
-        require_once __DIR__ . '/../../src/YandexGptClient.php';
-        require_once __DIR__ . '/../../src/Services/HistoryService.php';
-        require_once __DIR__ . '/../../src/Services/TopicService.php';
-        require_once __DIR__ . '/../../src/Services/MessagePreparationService.php';
+        $config = (static function () {
+            static $config;
+            return $config ??= include __DIR__ . '/../../config/config.php';
+        })();
 
         return new ChatBot(
             new YandexGptClient($config['yandex']),
