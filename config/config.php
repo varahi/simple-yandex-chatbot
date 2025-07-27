@@ -15,5 +15,6 @@ return [
     'topics' => [
         'allowed' => explode(',', $_ENV['ALLOWED_TOPICS']),
         'forbidden' => explode(',', $_ENV['FORBIDDEN_WORDS'])
-    ]
+    ],
+    'max_history' => 5
 ];

@@ -2,11 +2,14 @@
 
 namespace src\Services;
 
+use src\Contracts\MessagePreparerInterface;
 use src\Services\FaqService;
 use src\Services\TopicService;
 use src\Services\HistoryService;
 
-class MessagePreparationService
+require_once __DIR__ . '/../../src/Contracts/MessagePreparerInterface.php';
+
+class MessagePreparationService implements MessagePreparerInterface
 {
     public function __construct(
         private FaqService $faqService,
@@ -19,14 +22,14 @@ class MessagePreparationService
     public function prepare(string $userMessage): array
     {
         // 1. Проверка FAQ
-        //        if ($answer = $this->faqService->getPredefinedAnswer($userMessage)) {
-        //            return $this->prepareFaqResponse($answer);
-        //        }
+        if ($answer = $this->faqService->getPredefinedAnswer($userMessage)) {
+            return $this->prepareFaqResponse($answer);
+        }
 
         // 2. Проверка тематики
-        //        if (!$this->topicService->isAboutShopping($userMessage)) {
-        //            return $this->prepareRejectionResponse();
-        //        }
+        if (!$this->topicService->isAboutShopping($userMessage)) {
+            return $this->prepareRejectionResponse();
+        }
 
         // 3. Подготовка полного контекста
         return $this->prepareFullContext($userMessage);

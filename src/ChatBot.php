@@ -2,8 +2,8 @@
 
 namespace src;
 
+use src\Contracts\MessagePreparerInterface;
 use src\Services\HistoryService;
-use src\Services\MessagePreparationService;
 use src\Services\TopicService;
 
 class ChatBot
@@ -14,13 +14,13 @@ class ChatBot
 
     private TopicService $topicService;
 
-    private MessagePreparationService $messagePreparer;
+    private MessagePreparerInterface $messagePreparer;
 
     public function __construct(
         YandexGptClient $client,
         HistoryService $historyService,
         TopicService $topicService,
-        MessagePreparationService $messagePreparer
+        MessagePreparerInterface $messagePreparer
     ) {
         $this->client = $client;
         $this->historyService = $historyService;
