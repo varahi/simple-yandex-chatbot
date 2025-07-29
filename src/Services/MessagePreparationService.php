@@ -1,13 +1,8 @@
 <?php
 
-namespace src\Services;
+namespace App\Services;
 
-use src\Contracts\MessagePreparerInterface;
-use src\Services\FaqService;
-use src\Services\TopicService;
-use src\Services\HistoryService;
-
-require_once __DIR__ . '/../../src/Contracts/MessagePreparerInterface.php';
+use App\Contracts\MessagePreparerInterface;
 
 class MessagePreparationService implements MessagePreparerInterface
 {
