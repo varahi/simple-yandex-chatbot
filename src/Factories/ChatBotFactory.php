@@ -17,6 +17,7 @@ class ChatBotFactory
             static $config;
             return $config ??= include __DIR__ . '/../../config/config.php';
         })();
+        $topicsConfig = include __DIR__ . '/../../config/topic.php';
 
         return new ChatBot(
             new YandexGptClient($config['yandex']),
@@ -24,7 +25,7 @@ class ChatBotFactory
             new TopicService($config),
             new MessagePreparationService(
                 new FaqService(include __DIR__ . '/../../config/faq.php'),
-                new TopicService($config),
+                new TopicService($topicsConfig),
                 new HistoryService($config),
                 $config
             )

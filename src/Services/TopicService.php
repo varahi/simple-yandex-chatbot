@@ -4,53 +4,53 @@ namespace App\Services;
 
 class TopicService
 {
-    private $config;
+    private array $allowed;
+    private array $forbidden;
+    private array $settings;
 
-    public function __construct(
-        array $config,
-    ) {
-        $this->config = $config;
+    public function __construct(array $topicsConfig)
+    {
+        $this->allowed = $topicsConfig['allowed'] ?? [];
+        $this->forbidden = $topicsConfig['forbidden'] ?? [];
+        $this->settings = $topicsConfig['settings'] ?? [];
     }
 
     public function isForbidden(string $text): bool
     {
         $text = mb_strtolower($text);
 
-        // Если есть явно запрещённые слова — блокируем
-        foreach ($this->config['topics']['forbidden'] as $word) {
-            if (str_contains($text, $word)) {
+        foreach ($this->forbidden as $word) {
+            if ($this->matchWord($text, $word)) {
                 return true;
             }
         }
-
-        // Если ALLOWED_TOPICS содержит '*' — разрешаем всё остальное
-        if (in_array('*', $this->config['topics']['allowed'])) {
-            return false;
-        }
-
-        // Стандартная проверка (если нет '*')
-        foreach ($this->config['topics']['allowed'] as $topic) {
-            if (str_contains($text, $topic)) {
-                return false;
-            }
-        }
-
-        return true; // Тема не разрешена
+        return false;
     }
 
     public function isAboutShopping(string $text): bool
     {
-        $keywords = [
-            'заказ', 'оплат', 'доставк', 'корзин', 'оформить',
-            'куп', 'каталог', 'товар', 'магазин'
-        ];
+        if (in_array('*', $this->allowed)) {
+            return true;
+        }
 
-        foreach ($keywords as $keyword) {
-            if (stripos($text, $keyword) !== false) {
+        $text = mb_strtolower($text);
+        foreach ($this->allowed as $word) {
+            if ($this->matchWord($text, $word)) {
                 return true;
             }
         }
-
         return false;
+    }
+
+
+    private function matchWord(string $text, string $word): bool
+    {
+        if (mb_strlen($word) < ($this->settings['min_word_length'] ?? 3)) {
+            return false;
+        }
+
+        return $this->settings['use_regex'] ?? false
+            ? preg_match("/\b{$word}\b/u", $text)
+            : str_contains($text, $word);
     }
 }

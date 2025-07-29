@@ -12,9 +12,9 @@ return [
         'model_uri' => $_ENV['YANDEX_MODEL_URI'],
         'api_url' => 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
     ],
-    'topics' => [
-        'allowed' => explode(',', $_ENV['ALLOWED_TOPICS']),
-        'forbidden' => explode(',', $_ENV['FORBIDDEN_WORDS'])
-    ],
+//    'topics' => [
+//        'allowed' => explode(',', $_ENV['ALLOWED_TOPICS']),
+//        'forbidden' => explode(',', $_ENV['FORBIDDEN_WORDS'])
+//    ],
     'max_history' => 5
 ];
