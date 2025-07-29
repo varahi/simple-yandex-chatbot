@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Contracts\MessagePreparerInterface;
+use App\Exceptions\ForbiddenTopicException;
 use App\Services\HistoryService;
 use App\Services\TopicService;
 
@@ -31,7 +32,7 @@ class ChatBot
     public function handleMessage(string $userMessage): string
     {
         if ($this->topicService->isForbidden($userMessage)) {
-            return 'Эта тема не поддерживается.';
+            throw new ForbiddenTopicException();
         }
 
         $messages = $this->messagePreparer->prepare($userMessage);
