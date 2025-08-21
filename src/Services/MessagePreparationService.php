@@ -17,16 +17,22 @@ class MessagePreparationService implements MessagePreparerInterface
     public function prepare(string $userMessage): array
     {
         // 1. Проверка FAQ
+
+//        if ($answer = $this->faqService->getPredefinedAnswer($userMessage)) {
+//            return $this->prepareFaqResponse($answer);
+//        }
+
         if ($answer = $this->faqService->getPredefinedAnswer($userMessage)) {
-            return $this->prepareFaqResponse($answer);
+            return [['role' => 'assistant', 'text' => $answer]]; // ← Только готовый ответ
         }
 
         // 2. Проверка тематики
         if (!$this->topicService->isAboutShopping($userMessage)) {
-            return $this->prepareRejectionResponse();
+            return [['role' => 'assistant', 'text' => 'Это вопрос к другому специалисту.']];
+            // return $this->prepareRejectionResponse();
         }
 
-        // 3. Подготовка полного контекста
+        // 3. Только если не нашли в FAQ - готовим запрос к YandexGPT
         return $this->prepareFullContext($userMessage);
     }
 
@@ -53,22 +59,22 @@ class MessagePreparationService implements MessagePreparerInterface
 
     private function prepareFullContext(string $userMessage): array
     {
-        //        $messages = [
-        //            [
-        //                'role' => 'system',
-        //                'text' => 'Ты — помощник интернет-магазина. ' .
-        //                    'Отвечай на вопросы о заказах, оплате и доставке.'
-        //            ]
-        //        ];
+                $messages = [
+                    [
+                        'role' => 'system',
+                        'text' => 'Ты — помощник интернет-магазина https://xn--80aaack2amqkhfh0c8lg.xn--p1ai/ ' .
+                            'Отвечай на вопросы о заказах, оплате и доставке.'
+                    ]
+                ];
 
 
-        $messages = [[
-            'role' => 'system',
-            'text' => 'Ты — помощник без тематических ограничений. ' .
-                'Не отвечай только на вопросы про: ' .
-                implode(', ', $this->config['topics']['forbidden']) . '. ' .
-                'На запрещённые темы говори: "Этот вопрос не в моей компетенции".'
-        ]];
+//        $messages = [[
+//            'role' => 'system',
+//            'text' => 'Ты — помощник без тематических ограничений. ' .
+//                'Не отвечай только на вопросы про: ' .
+//                implode(', ', $this->config['topics']['forbidden']) . '. ' .
+//                'На запрещённые темы говори: "Этот вопрос не в моей компетенции".'
+//        ]];
 
         foreach ($this->historyService->getHistory() as $item) {
             $messages[] = ['role' => $item['role'], 'text' => $item['text']];
