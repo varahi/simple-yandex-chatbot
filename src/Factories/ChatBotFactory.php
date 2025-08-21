@@ -6,6 +6,8 @@ use App\ChatBot;
 use App\Services\FaqService;
 use App\Services\HistoryService;
 use App\Services\MessagePreparationService;
+use App\Services\ProductService;
+use App\Services\SearchService;
 use App\Services\TopicService;
 use App\YandexGptClient;
 
@@ -27,7 +29,10 @@ class ChatBotFactory
                 new FaqService(include __DIR__ . '/../../config/faq.php'),
                 new TopicService($topicsConfig),
                 new HistoryService($config),
-                $config
+                new SearchService(),
+                new ProductService(),
+                //$config,
+                $topicsConfig
             )
         );
     }
