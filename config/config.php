@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
@@ -14,5 +15,6 @@ return [
     'topics' => [
         'allowed' => explode(',', $_ENV['ALLOWED_TOPICS']),
         'forbidden' => explode(',', $_ENV['FORBIDDEN_WORDS'])
-    ]
+    ],
+    'max_history' => 5
 ];
