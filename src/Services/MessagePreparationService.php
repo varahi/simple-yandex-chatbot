@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\MessagePreparerInterface;
+use App\Services\Product\ProductService;
 
 class MessagePreparationService implements MessagePreparerInterface
 {
@@ -75,7 +76,6 @@ class MessagePreparationService implements MessagePreparerInterface
                     'Отвечай на вопросы о заказах, оплате и доставке.'
             ]
         ];
-
 
         //        $messages = [[
         //            'role' => 'system',

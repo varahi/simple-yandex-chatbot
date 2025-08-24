@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Product;
 
 use App\Database\PDOConnection;
-use Exception;
 use PDO;
 use PDOException;
 
 class ProductService
 {
-    public const PRODUCT_TABLE = 'b_iblock_element';
-
     private PDO $pdo;
 
     private ProductAnswerGenerator $answerGenerator;
+
+    private ProductUrlGenerator $urlGenerator;
 
     public function __construct()
     {
         $this->pdo = PDOConnection::getInstance();
         $this->answerGenerator = new ProductAnswerGenerator();
+        $this->urlGenerator = new ProductUrlGenerator();
     }
 
     public function findProductByQuery(string $query): ?array
@@ -77,7 +77,7 @@ class ProductService
     public function findProductByName(string $name): ?array
     {
         $stmt = $this->pdo->prepare("
-            SELECT * FROM self::PRODUCT_TABLE
+            SELECT * FROM b_iblock_element 
             WHERE name = :name
         ");
 
@@ -89,5 +89,10 @@ class ProductService
     public function generateProductAnswer(string $question, array $product): string
     {
         return $this->answerGenerator->generateAnswer($question, $product);
+    }
+
+    public function getProductUrl(array $product): string
+    {
+        return $this->urlGenerator->generateProductUrl($product);
     }
 }

@@ -1,9 +1,16 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Product;
 
 class ProductAnswerGenerator
 {
+    private ProductUrlGenerator $urlGenerator;
+
+    public function __construct()
+    {
+        $this->urlGenerator = new ProductUrlGenerator();
+    }
+
     public function generateAnswer(string $question, array $product): string
     {
         $question = mb_strtolower(trim($question));
@@ -90,7 +97,8 @@ class ProductAnswerGenerator
     private function generateGeneralAnswer(array $product): string
     {
         $text = $product['PREVIEW_TEXT'] ?? $product['DETAIL_TEXT'] ?? '';
-        $url = "https://компаниябогатая.рф/catalog/{$product['CODE']}/";
+        //$url = "https://компаниябогатая.рф/catalog/{$product['CODE']}/";
+        $url = $this->urlGenerator->generateProductUrl($product);
         $link = $this->formatMarkdownLink($url, 'перейти на страницу товара');
 
         return "📦 {$product['NAME']}\n\n".

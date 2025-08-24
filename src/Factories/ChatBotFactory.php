@@ -6,7 +6,7 @@ use App\ChatBot;
 use App\Services\FaqService;
 use App\Services\HistoryService;
 use App\Services\MessagePreparationService;
-use App\Services\ProductService;
+use App\Services\Product\ProductService;
 use App\Services\TopicService;
 use App\YandexGptClient;
 
