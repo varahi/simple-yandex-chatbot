@@ -45,17 +45,17 @@ class FaqService
             foreach ($faqItem['patterns'] as $pattern) {
                 if (preg_match($pattern, $question)) {
                     // Логируем найденное совпадение
-                    file_put_contents(
-                        'faq_debug.log',
-                        "Найдено: " . $pattern . " -> " . $faqItem['answer'] . "\n",
-                        FILE_APPEND
-                    );
+                    //                    file_put_contents(
+                    //                        'faq_debug.log',
+                    //                        "Найдено: " . $pattern . " -> " . $faqItem['answer'] . "\n",
+                    //                        FILE_APPEND
+                    //                    );
                     return $faqItem['answer'];
                 }
             }
         }
 
-        file_put_contents('faq_debug.log', "Не найдено совпадений\n", FILE_APPEND);
+        //file_put_contents('faq_debug.log', "Не найдено совпадений\n", FILE_APPEND);
         return null;
     }
 }

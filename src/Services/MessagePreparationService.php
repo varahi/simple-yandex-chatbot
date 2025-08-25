@@ -26,11 +26,8 @@ class MessagePreparationService implements MessagePreparerInterface
         }
 
         // 2. Берем данные из БД
-        if ($product = $this->productService->findProductByQuery($userMessage)) {
-
-            //file_put_contents('product_result.log', print_r($product, true));
-
-            $answer = $this->productService->generateProductAnswer($userMessage, $product);
+        if ($products = $this->productService->findProductsByQuery($userMessage, $_ENV['PRODUCT_RESULT_LIMIT'])) {
+            $answer = $this->productService->generateProductAnswer($userMessage, $products);
             return [['role' => 'assistant', 'text' => $answer]];
         }
 

@@ -15,10 +15,20 @@ class ProductAnswerGenerator
         $this->imageService = new ProductImageService();
     }
 
-    public function generateAnswer(string $question, array $product): string
+    public function generateAnswer(string $question, array $products): string
     {
-        // Общий ответ по умолчанию
-        return $this->generateGeneralAnswer($product);
+        $html = "<div class='products-grid'>";
+        $html .= "<h3>🎯 Найдено товаров: " . count($products) . "</h3>";
+
+        foreach ($products as $product) {
+            $html .= "<div class='product-grid-item product-card'>";
+            $html .=  $this->generateGeneralAnswer($product);
+            $html .= "</div>";
+        }
+
+        $html .= "</div>";
+
+        return $html;
     }
 
     private function generateGeneralAnswer(array $product): string
@@ -31,11 +41,16 @@ class ProductAnswerGenerator
         $link = $this->formatMarkdownLink($url, 'перейти на страницу товара');
         $imageUrl = $this->imageService->getProductImageUrl($product, 'small');
 
-        return "📦 {$product['NAME']}\n\n".
-            "📖 " . $this->truncateText($detailTrimmed, 400) . "\n\n".
-            "🖼️ <img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\">\n\n".
+        return "
+            <div class='product-info'>
+            <h4>📦 {$product['NAME']}</h4>\n\n".
+            "<p> 📖 " . $this->truncateText($detailTrimmed, 400) . "</p>\n\n".
+            //"🖼️ <div class='product-image'><img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\"></div>\n\n".
+            "<div class='product-image'><img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\"></div>\n\n".
             "🔗 Подробнее: {$link}\n".
-            "📞 Консультация: позвоните нам +7 (914) 70-170-09";
+            "📞 Консультация: позвоните нам +7 (914) 70-170-09\n".
+            "</div>"
+        ;
     }
 
     private function truncateText(string $text, int $length): string
