@@ -31,8 +31,8 @@ class ProductService
 
             /*
             $sql = "
-            SELECT * FROM b_iblock_element 
-            WHERE 
+            SELECT * FROM b_iblock_element
+            WHERE
                 NAME LIKE :query1 OR
                 PREVIEW_TEXT LIKE :query2 OR
                 DETAIL_TEXT LIKE :query3 OR
@@ -53,9 +53,9 @@ class ProductService
             $stmt = $this->pdo->prepare($sql);
 
             // Явно биндим параметры с логированием
-//            $stmt->bindValue(':query1', $searchQuery, PDO::PARAM_STR);
-//            $stmt->bindValue(':query2', $searchQuery, PDO::PARAM_STR);
-//            $stmt->bindValue(':query3', $searchQuery, PDO::PARAM_STR);
+            //            $stmt->bindValue(':query1', $searchQuery, PDO::PARAM_STR);
+            //            $stmt->bindValue(':query2', $searchQuery, PDO::PARAM_STR);
+            //            $stmt->bindValue(':query3', $searchQuery, PDO::PARAM_STR);
             $stmt->bindValue(':query4', $searchQuery, PDO::PARAM_STR);
             $stmt->bindValue(':active', 'Y', PDO::PARAM_STR);
 

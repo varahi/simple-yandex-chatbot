@@ -22,7 +22,7 @@ class ProductUrlGenerator
         //file_put_contents('section_id.log', "Section id: " . $sectionId . "\n", FILE_APPEND);
 
         if (!$productId || !$sectionId) {
-            return "https://компаниябогатая.рф/catalog/";
+            return $_ENV['BASE_URL'] . "/catalog/";
         }
 
         // Получаем полный путь категорий
@@ -30,10 +30,10 @@ class ProductUrlGenerator
         $productCode = $product['CODE'] ?? '';
 
         if (empty($categoryPath) || empty($productCode)) {
-            return "https://компаниябогатая.рф/catalog/";
+            return $_ENV['BASE_URL'] . "/catalog/";
         }
 
-        return "https://компаниябогатая.рф/catalog/" . $categoryPath . "/" . $productCode;
+        return $_ENV['BASE_URL'] . "/catalog/" . $categoryPath . "/" . $productCode;
     }
 
     private function getCategoryPath(int $sectionId): string

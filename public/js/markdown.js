@@ -6,9 +6,9 @@
 function renderMarkdown(markdownText) {
     // Экранирование HTML-тегов для безопасности
     let html = markdownText
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+        // .replace(/&/g, "&amp;")
+        // .replace(/</g, "&lt;")
+        // .replace(/>/g, "&gt;");
 
     // Преобразование Markdown в HTML
     return html

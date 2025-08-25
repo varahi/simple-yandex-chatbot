@@ -7,10 +7,12 @@ use DOMDocument;
 class ProductAnswerGenerator
 {
     private ProductUrlGenerator $urlGenerator;
+    private ProductImageService $imageService;
 
     public function __construct()
     {
         $this->urlGenerator = new ProductUrlGenerator();
+        $this->imageService = new ProductImageService();
     }
 
     public function generateAnswer(string $question, array $product): string
@@ -27,20 +29,34 @@ class ProductAnswerGenerator
 
         $url = $this->urlGenerator->generateProductUrl($product);
         $link = $this->formatMarkdownLink($url, 'перейти на страницу товара');
+        $imageUrl = $this->imageService->getProductImageUrl($product, 'small');
 
         return "📦 {$product['NAME']}\n\n".
             "📖 " . $this->truncateText($detailTrimmed, 400) . "\n\n".
+            "🖼️ <img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\">\n\n".
             "🔗 Подробнее: {$link}\n".
             "📞 Консультация: позвоните нам +7 (914) 70-170-09";
     }
 
     private function truncateText(string $text, int $length): string
     {
+        // Убираем лишние переносы и пробелы
+        $text = preg_replace('/\s+/', ' ', $text);
+        $text = trim($text);
+
         if (mb_strlen($text) <= $length) {
             return $text;
         }
 
-        return mb_substr($text, 0, $length) . '...';
+        // Обрезаем до последнего полного слова
+        $truncated = mb_substr($text, 0, $length);
+        $lastSpace = mb_strrpos($truncated, ' ');
+
+        if ($lastSpace !== false) {
+            $truncated = mb_substr($truncated, 0, $lastSpace);
+        }
+
+        return $truncated . '…';
     }
 
     private function formatMarkdownLink(string $url, string $text): string
@@ -49,7 +65,8 @@ class ProductAnswerGenerator
         return "[{$text}]({$encodedUrl})";
     }
 
-    function htmlToTextDom(string $html): string {
+    public function htmlToTextDom(string $html): string
+    {
         // Подавляем предупреждения парсера
         libxml_use_internal_errors(true);
 

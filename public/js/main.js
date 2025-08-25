@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Применяем Markdown-разметку
         messageDiv.innerHTML = renderMarkdown(content);
+        //messageDiv.innerHTML = renderContent(content);
 
         // Подсветка синтаксиса (если подключена библиотека)
         if (typeof hljs !== 'undefined') {
@@ -58,6 +59,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         scrollToBottom();
+    }
+
+    function renderContent(content) {
+        // Проверяем, если это уже HTML
+        const hasHtmlTags = /<[a-z][\s\S]*>/i.test(content);
+
+        if (hasHtmlTags) {
+            return content; // Возвращаем HTML как есть
+        } else {
+            return renderMarkdown(content); // Преобразуем Markdown
+        }
     }
 
     // Сохранение истории в localStorage
