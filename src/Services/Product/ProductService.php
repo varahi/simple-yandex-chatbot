@@ -29,6 +29,7 @@ class ProductService
             //file_put_contents('product.log', "[" . date('Y-m-d H:i:s') . "] Original query: " . $query . "\n", FILE_APPEND);
             //file_put_contents('product.log', "[" . date('Y-m-d H:i:s') . "] Search pattern: " . $searchQuery . "\n", FILE_APPEND);
 
+            /*
             $sql = "
             SELECT * FROM b_iblock_element 
             WHERE 
@@ -37,6 +38,14 @@ class ProductService
                 DETAIL_TEXT LIKE :query3 OR
                 SEARCHABLE_CONTENT LIKE :query4
             LIMIT 1
+        ";*/
+
+            $sql = "
+            SELECT * FROM b_iblock_element 
+            WHERE 
+                SEARCHABLE_CONTENT LIKE :query4
+                AND ACTIVE = :active
+            LIMIT 1
         ";
 
             //file_put_contents('product.log', "[" . date('Y-m-d H:i:s') . "] SQL: " . $sql . "\n", FILE_APPEND);
@@ -44,10 +53,11 @@ class ProductService
             $stmt = $this->pdo->prepare($sql);
 
             // Явно биндим параметры с логированием
-            $stmt->bindValue(':query1', $searchQuery, PDO::PARAM_STR);
-            $stmt->bindValue(':query2', $searchQuery, PDO::PARAM_STR);
-            $stmt->bindValue(':query3', $searchQuery, PDO::PARAM_STR);
+//            $stmt->bindValue(':query1', $searchQuery, PDO::PARAM_STR);
+//            $stmt->bindValue(':query2', $searchQuery, PDO::PARAM_STR);
+//            $stmt->bindValue(':query3', $searchQuery, PDO::PARAM_STR);
             $stmt->bindValue(':query4', $searchQuery, PDO::PARAM_STR);
+            $stmt->bindValue(':active', 'Y', PDO::PARAM_STR);
 
             //file_put_contents('product.log', "[" . date('Y-m-d H:i:s') . "] Parameters bound\n", FILE_APPEND);
 

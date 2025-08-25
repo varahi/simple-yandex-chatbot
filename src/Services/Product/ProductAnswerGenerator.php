@@ -2,6 +2,8 @@
 
 namespace App\Services\Product;
 
+use DOMDocument;
+
 class ProductAnswerGenerator
 {
     private ProductUrlGenerator $urlGenerator;
@@ -13,98 +15,22 @@ class ProductAnswerGenerator
 
     public function generateAnswer(string $question, array $product): string
     {
-        $question = mb_strtolower(trim($question));
-
-        // Определяем тип вопроса и формируем ответ
-        if ($this->isPriceQuestion($question)) {
-            return $this->generatePriceAnswer($product);
-        }
-
-        if ($this->isDescriptionQuestion($question)) {
-            return $this->generateDescriptionAnswer($product);
-        }
-
-        if ($this->isUsageQuestion($question)) {
-            return $this->generateUsageAnswer($product);
-        }
-
-        if ($this->isAvailabilityQuestion($question)) {
-            return $this->generateAvailabilityAnswer($product);
-        }
-
         // Общий ответ по умолчанию
         return $this->generateGeneralAnswer($product);
     }
 
-    private function isPriceQuestion(string $question): bool
-    {
-        return preg_match('/цена|стоимость|сколько стоит|цен[уы]|прайс/ui', $question);
-    }
-
-    private function isDescriptionQuestion(string $question): bool
-    {
-        return preg_match('/описание|что это|о товаре|расскажи|покажи/ui', $question);
-    }
-
-    private function isUsageQuestion(string $question): bool
-    {
-        return preg_match('/применение|как использовать|для чего|использование|инструкция/ui', $question);
-    }
-
-    private function isAvailabilityQuestion(string $question): bool
-    {
-        return preg_match('/наличие|есть ли|доступен|в наличии|можно купить/ui', $question);
-    }
-
-    private function generatePriceAnswer(array $product): string
-    {
-        // TODO: Добавить получение цены из другого источника (iblock_element_price)
-        return "📦 {$product['NAME']}\n\n".
-            "💰 Цену уточняйте у менеджера\n".
-            "📞 Для получения актуальной цены и наличия позвоните нам +7 (914) 70-170-09";
-    }
-
-    private function generateDescriptionAnswer(array $product): string
-    {
-        $text = $product['DETAIL_TEXT'] ?? $product['PREVIEW_TEXT'] ?? '';
-        $url = "https://компаниябогатая.рф/{$product['CODE']}/";
-
-        return "📦 {$product['NAME']}\n\n".
-            "📖 Описание:\n".
-            $this->truncateText($text, 300) . "\n\n".
-            "🔗 Подробнее: https://компаниябогатая.рф/{$product['CODE']}/";
-    }
-
-    private function generateUsageAnswer(array $product): string
-    {
-        $text = $product['DETAIL_TEXT'] ?? $product['PREVIEW_TEXT'] ?? '';
-
-        return "📦 {$product['NAME']}\n\n".
-            "🎯 Применение:\n".
-            $this->extractUsageInfo($text) . "\n\n".
-            "📋 Особенности: " . $this->extractFeatures($text);
-    }
-
-    private function generateAvailabilityAnswer(array $product): string
-    {
-        $status = $product['ACTIVE'] === 'Y' ? '✅ В наличии' : '⏳ Под заказ';
-
-        return "📦 {$product['NAME']}\n\n".
-            "{$status}\n".
-            "📞 Уточнить наличие и сроки: позвоните нам +7 (914) 70-170-09";
-    }
-
     private function generateGeneralAnswer(array $product): string
     {
-        $text = $product['PREVIEW_TEXT'] ?? $product['DETAIL_TEXT'] ?? '';
-        //$url = "https://компаниябогатая.рф/catalog/{$product['CODE']}/";
+        $detailHtml = $product['DETAIL_TEXT'] ?? '';
+        $detailText = $this->htmlToTextDom($detailHtml);
+        $detailTrimmed = mb_strlen($detailText) > 400 ? mb_substr($detailText, 0, 400) . '…' : $detailText;
+
         $url = $this->urlGenerator->generateProductUrl($product);
         $link = $this->formatMarkdownLink($url, 'перейти на страницу товара');
 
         return "📦 {$product['NAME']}\n\n".
-            "📖 " . $this->truncateText($text, 200) . "\n\n".
+            "📖 " . $this->truncateText($detailTrimmed, 400) . "\n\n".
             "🔗 Подробнее: {$link}\n".
-            //"🔗 Подробнее: <a href=\"{$url}\">перейти на страницу товара</a>\n".
             "📞 Консультация: позвоните нам +7 (914) 70-170-09";
     }
 
@@ -117,39 +43,45 @@ class ProductAnswerGenerator
         return mb_substr($text, 0, $length) . '...';
     }
 
-    private function extractUsageInfo(string $text): string
-    {
-        // Простая логика извлечения информации о применении
-        if (preg_match('/(для|применяется|используется)[^.!?]{10,100}/ui', $text, $matches)) {
-            return trim($matches[0]) . '.';
-        }
-
-        return $this->truncateText($text, 150);
-    }
-
-    private function extractFeatures(string $text): string
-    {
-        $features = [];
-
-        if (strpos($text, 'детский') !== false) {
-            $features[] = '👶 Детское средство';
-        }
-        if (strpos($text, 'аэрозоль') !== false) {
-            $features[] = '💨 Аэрозоль';
-        }
-        if (strpos($text, 'клещ') !== false) {
-            $features[] = '🕷️ Защита от клещей';
-        }
-        if (strpos($text, 'комаров') !== false) {
-            $features[] = '🦟 Защита от комаров';
-        }
-
-        return $features ? implode(', ', $features) : 'Средство защиты';
-    }
-
     private function formatMarkdownLink(string $url, string $text): string
     {
         $encodedUrl = str_replace('_', '%5F', $url);
         return "[{$text}]({$encodedUrl})";
+    }
+
+    function htmlToTextDom(string $html): string {
+        // Подавляем предупреждения парсера
+        libxml_use_internal_errors(true);
+
+        $doc = new DOMDocument();
+        // Добавляем мета-charset, чтобы корректно читать UTF-8
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_NOWARNING | LIBXML_NOERROR);
+
+        // Заменяем <br> на '\n'
+        $brs = $doc->getElementsByTagName('br');
+        for ($i = $brs->length - 1; $i >= 0; $i--) {
+            $br = $brs->item($i);
+            $br->parentNode->replaceChild($doc->createTextNode("\n"), $br);
+        }
+
+        // Вставляем двойной перенос после каждого закрытого <p>
+        $ps = $doc->getElementsByTagName('p');
+        for ($i = $ps->length - 1; $i >= 0; $i--) {
+            $p = $ps->item($i);
+            if ($p->nextSibling) {
+                $p->parentNode->insertBefore($doc->createTextNode("\n\n"), $p->nextSibling);
+            } else {
+                $p->parentNode->appendChild($doc->createTextNode("\n\n"));
+            }
+        }
+
+        $text = $doc->textContent ?? '';
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = str_replace("\xC2\xA0", ' ', $text);
+        $text = preg_replace("/\r\n|\r/", "\n", $text);
+        $text = preg_replace("/\n{3,}/", "\n\n", $text);
+        $text = preg_replace('/[ \t]{2,}/', ' ', $text);
+
+        return trim($text);
     }
 }
