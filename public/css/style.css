@@ -35,6 +35,13 @@ body {
     padding: 15px 20px;
     text-align: center;
 }
+.chat-header h1 {
+    font-size: 22px;
+}
+
+.chat-header p {
+    font-size: 16px;
+}
 
 .chat-messages {
     flex: 1;

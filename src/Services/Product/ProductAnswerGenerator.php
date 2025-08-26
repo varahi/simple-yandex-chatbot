@@ -18,7 +18,8 @@ class ProductAnswerGenerator
     public function generateAnswer(string $question, array $products): string
     {
         $html = "<div class='products-grid'>";
-        $html .= "<h3>🎯 Найдено товаров: " . count($products) . "</h3>";
+        //$html .= "<h3>🎯 Найдено товаров: " . count($products) . "</h3>";
+        $html .= "<h4 style='font-size: 14px;'>🎯 Наши рекомендации: " . "</h4>";
 
         foreach ($products as $product) {
             $html .= "<div class='product-grid-item product-card'>";
@@ -33,20 +34,30 @@ class ProductAnswerGenerator
 
     private function generateGeneralAnswer(array $product): string
     {
+        $detailTrimmedHtml = '';
         $detailHtml = $product['DETAIL_TEXT'] ?? '';
-        $detailText = $this->htmlToTextDom($detailHtml);
-        $detailTrimmed = mb_strlen($detailText) > 400 ? mb_substr($detailText, 0, 400) . '…' : $detailText;
+        if($detailHtml) {
+            $detailText = $this->htmlToTextDom($detailHtml);
+            $detailTrimmed = mb_strlen($detailText) > 400 ? mb_substr($detailText, 0, 400) . '…' : $detailText;
+            $detailTrimmedHtml = "<p> 📖 " . $this->truncateText($detailTrimmed, 400) . "</p>";
+        }
 
         $url = $this->urlGenerator->generateProductUrl($product);
+        $formatedLink = $this->formatLink($url);
         $link = $this->formatMarkdownLink($url, 'перейти на страницу товара');
         $imageUrl = $this->imageService->getProductImageUrl($product, 'small');
+
+        //"🖼️ <div class='product-image'><img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\"></div>\n\n".
+        $imageHtml = '';
+        if ($imageUrl) {
+            $imageHtml = "<div class='product-image'><a href=\"{$formatedLink}\" target='_blank'><img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\"></a></div>\n\n";
+        }
 
         return "
             <div class='product-info'>
             <h4>📦 {$product['NAME']}</h4>\n\n".
-            "<p> 📖 " . $this->truncateText($detailTrimmed, 400) . "</p>\n\n".
-            //"🖼️ <div class='product-image'><img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\"></div>\n\n".
-            "<div class='product-image'><img src=\"{$imageUrl}\" style=\"max-width: 200px; float: right; margin-left: 10px;\"></div>\n\n".
+            "{$detailTrimmedHtml}\n".
+            "{$imageHtml}\n".
             "🔗 Подробнее: {$link}\n".
             "📞 Консультация: позвоните нам +7 (914) 70-170-09\n".
             "</div>"
@@ -78,6 +89,12 @@ class ProductAnswerGenerator
     {
         $encodedUrl = str_replace('_', '%5F', $url);
         return "[{$text}]({$encodedUrl})";
+    }
+
+    private function formatLink(string $url): string
+    {
+        $encodedUrl = str_replace('_', '%5F', $url);
+        return "{$encodedUrl}";
     }
 
     public function htmlToTextDom(string $html): string
