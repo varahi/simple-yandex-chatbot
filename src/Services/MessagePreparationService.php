@@ -25,22 +25,55 @@ class MessagePreparationService implements MessagePreparerInterface
             return [['role' => 'assistant', 'text' => $answer]]; // ← Только готовый ответ
         }
 
-        // 2. Берем данные из БД
+        // 2. Отображаем новинки
+        if ($this->isNewProductQuestion($userMessage)) {
+            $products = $this->productService->findNewRandomProducts($_ENV['PRODUCT_RESULT_LIMIT'], $_ENV['NEW_PRODUCT_CATEGORY']);
+            $answer = $this->productService->generateProductAnswer($userMessage, $products);
+            return [['role' => 'assistant', 'text' => $answer]];
+        }
+
+        // 3. Берем данные из БД
         if ($products = $this->productService->findProductsByQuery($userMessage, $_ENV['PRODUCT_RESULT_LIMIT'])) {
             $answer = $this->productService->generateProductAnswer($userMessage, $products);
             return [['role' => 'assistant', 'text' => $answer]];
         }
 
-        // 3. Проверка тематики
+        // 4. Проверка тематики
         if (!$this->topicService->isAboutShopping($userMessage)) {
             //return [['role' => 'assistant', 'text' => 'Это вопрос к другому специалисту.']];
             // return $this->prepareRejectionResponse();
         }
 
-        // 4. ToDo:  берем данные из яндекса.
+        // 5. ToDo:  берем данные из яндекса.
 
-        // 5. Только если не нашли в FAQ - готовим запрос к YandexGPT
+        // 6. Только если не нашли в FAQ - готовим запрос к YandexGPT
         return $this->prepareFullContext($userMessage);
+    }
+
+    private function isNewProductQuestion(string $question): bool
+    {
+        $question = mb_strtolower(trim($question));
+
+        $patterns = [
+            '/новинк[иау]?/ui',
+            '/новые товары/ui',
+            '/новый товар/ui',
+            '/что новенького/ui',
+            '/последние поступления/ui',
+            '/недавно поступившие/ui',
+            '/свежие товары/ui',
+            '/новое в ассортименте/ui',
+            '/наши новинки/ui'
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $question)) {
+                //file_put_contents('new.log', "Pattern matched: " . $pattern . " for question: " . $question . "\n", FILE_APPEND);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function prepareFaqResponse(string $answer): array
