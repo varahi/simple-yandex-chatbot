@@ -27,14 +27,14 @@ class MessagePreparationService implements MessagePreparerInterface
 
         // 2. Отображаем новинки
         if ($this->isNewProductQuestion($userMessage)) {
-            $products = $this->productService->findNewRandomProducts($_ENV['PRODUCT_RESULT_LIMIT'], $_ENV['NEW_PRODUCT_CATEGORY']);
-            $answer = $this->productService->generateProductAnswer($userMessage, $products);
+            $products = $this->productService->getNewRandomProducts();
+            $answer = $this->productService->generateProductAnswer($userMessage, $products, 'Наши новинки');
             return [['role' => 'assistant', 'text' => $answer]];
         }
 
         // 3. Берем данные из БД
-        if ($products = $this->productService->findProductsByQuery($userMessage, $_ENV['PRODUCT_RESULT_LIMIT'])) {
-            $answer = $this->productService->generateProductAnswer($userMessage, $products);
+        if ($products = $this->productService->getProductsByQuery($userMessage)) {
+            $answer = $this->productService->generateProductAnswer($userMessage, $products, 'Наши товары');
             return [['role' => 'assistant', 'text' => $answer]];
         }
 

@@ -15,15 +15,10 @@ class ProductAnswerGenerator
         $this->imageService = new ProductImageService();
     }
 
-    public function generateAnswer(string $question, array $products): string
+    public function generateAnswer(string $question, array $products, string $title): string
     {
         $html = "<div class='products-grid'>";
-        //$html .= "<h3>🎯 Найдено товаров: " . count($products) . "</h3>";
-        $html .= "<h4 style='font-size: 14px;'>🎯 Наши рекомендации: " . "</h4>";
-
-        //        file_put_contents('new.log', "New: " . $this->isNewProductQuestion($question) . "\n", FILE_APPEND);
-        //
-
+        $html .= "<h4 style='font-size: 14px;'>🎯 $title: " . "</h4>";
 
         foreach ($products as $product) {
             $html .= "<div class='product-grid-item product-card'>";
