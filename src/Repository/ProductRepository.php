@@ -32,7 +32,7 @@ class ProductRepository
         return $word;
     }
 
-    // @ToDo: try to use  https://phpmorphy.sourceforge.net/
+    // @ToDo: try to use  https://phpmorphy.sourceforge.net/ or Elastic Search or MySQL Full text search
 
     public function findProductsByQuery(string $query, int $limit): array
     {

@@ -12,6 +12,7 @@ class MessagePreparationService implements MessagePreparerInterface
         private TopicService $topicService,
         private HistoryService $historyService,
         private ProductService $productService,
+        private YandexSearchService $yandexSearchService,
         private array $config
     ) {
     }
@@ -22,7 +23,7 @@ class MessagePreparationService implements MessagePreparerInterface
         // 1. Проверка FAQ
         if ($answer = $this->faqService->getPredefinedAnswer($userMessage)) {
             //return $this->prepareFaqResponse($answer);
-            return [['role' => 'assistant', 'text' => $answer]]; // ← Только готовый ответ
+            return [['role' => 'assistant', 'text' => '<div class="products-card"> ' . $answer . '</div>']]; // ← Только готовый ответ
         }
 
         // 2. Отображаем новинки
@@ -44,10 +45,34 @@ class MessagePreparationService implements MessagePreparerInterface
             // return $this->prepareRejectionResponse();
         }
 
-        // 5. ToDo:  берем данные из яндекса.
+//        $searchResults = $this->yandexSearchService->search($userMessage, 3);
+//        //file_put_contents('yandex.log', "Result: " . $searchResults . "\n", FILE_APPEND);
+//        file_put_contents('yandex.log', print_r($searchResults, true));
+//
+//        // 5. ToDo:  берем данные из яндекса.
+//        $searchResults = $this->yandexSearchService->search($userMessage, 3);
+//        if (!empty($searchResults)) {
+//            $answer = $this->formatSearchResults($searchResults, $userMessage);
+//            return [['role' => 'assistant', 'text' => $answer]];
+//        }
 
         // 6. Только если не нашли в FAQ - готовим запрос к YandexGPT
         return $this->prepareFullContext($userMessage);
+    }
+
+    private function formatSearchResults(array $results, string $query): string
+    {
+        $html = "🔍 <strong>По запросу \"{$query}\" найдено:</strong>\n\n";
+
+        foreach ($results as $index => $result) {
+            $html .= "<strong>" . ($index + 1) . ". {$result['title']}</strong>\n";
+            $html .= "{$result['snippet']}\n";
+            $html .= "🌐 <a href=\"{$result['url']}\" target=\"_blank\">{$result['domain']}</a>\n\n";
+        }
+
+        $html .= "💡 <em>Это результаты поиска из интернета. Для точной информации о наших товарах уточните запрос или позвоните нам.</em>";
+
+        return $html;
     }
 
     private function isNewProductQuestion(string $question): bool

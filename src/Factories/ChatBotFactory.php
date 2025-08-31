@@ -8,6 +8,7 @@ use App\Services\HistoryService;
 use App\Services\MessagePreparationService;
 use App\Services\Product\ProductService;
 use App\Services\TopicService;
+use App\Services\YandexSearchService;
 use App\YandexGptClient;
 
 class ChatBotFactory
@@ -28,6 +29,10 @@ class ChatBotFactory
                 new TopicService($config),
                 new HistoryService($config),
                 new ProductService(),
+                new YandexSearchService(
+                    $_ENV['YANDEX_API_KEY'],
+                    $_ENV['YANDEX_SEARCH_ENGINE_ID']
+                ),
                 $config
             )
         );
