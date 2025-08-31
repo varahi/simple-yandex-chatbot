@@ -15,49 +15,51 @@ class ProductRepository
         $this->pdo = PDOConnection::getInstance();
     }
 
-
     public function findProductsByQuery(string $query, int $limit): array
     {
-        try {
-
-            $keywords = $this->extractKeywords($query);
-
-            if (empty($keywords)) {
-                return [];
-            }
-
-            foreach ($keywords as $keyword) {
-                $searchQuery = '%' . $keyword . '%';
-
-                $stmt = $this->pdo->prepare("
-            SELECT * FROM b_iblock_element
-            WHERE
-                NAME LIKE :query1 OR
-                PREVIEW_TEXT LIKE :query2 OR
-                DETAIL_TEXT LIKE :query3 OR
-                SEARCHABLE_CONTENT LIKE :query4
-                AND ACTIVE = :active
-            LIMIT :limit
-        ");
-
-                $stmt->bindValue(':query1', $searchQuery, PDO::PARAM_STR);
-                $stmt->bindValue(':query2', $searchQuery, PDO::PARAM_STR);
-                $stmt->bindValue(':query3', $searchQuery, PDO::PARAM_STR);
-                $stmt->bindValue(':query4', $searchQuery, PDO::PARAM_STR);
-                $stmt->bindValue(':active', 'Y', PDO::PARAM_STR);
-                $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-
-                $stmt->execute();
-
-            }
-
-            return $stmt->fetchAll() ?: [];
-
-
-        } catch (PDOException $e) {
-            error_log("Products search error: " . $e->getMessage());
+        $keywords = $this->extractKeywords($query);
+        if (empty($keywords)) {
             return [];
         }
+
+        $sql = "
+        SELECT * FROM b_iblock_element
+        WHERE (
+            NAME LIKE :q1 OR
+            PREVIEW_TEXT LIKE :q2 OR
+            DETAIL_TEXT LIKE :q3 OR
+            SEARCHABLE_CONTENT LIKE :q4
+        ) AND ACTIVE = :active
+        LIMIT " . (int)$limit;
+
+        $stmt = $this->pdo->prepare($sql);
+        $results = [];
+
+        foreach ($keywords as $keyword) {
+            $search = '%' . $keyword . '%';
+            $stmt->bindValue(':q1', $search, PDO::PARAM_STR);
+            $stmt->bindValue(':q2', $search, PDO::PARAM_STR);
+            $stmt->bindValue(':q3', $search, PDO::PARAM_STR);
+            $stmt->bindValue(':q4', $search, PDO::PARAM_STR);
+            $stmt->bindValue(':active', 'Y', PDO::PARAM_STR);
+
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // аккумулируем и устраняем дубликаты по ID
+            foreach ($rows as $r) {
+                if (!isset($results[$r['ID']])) {
+                    $results[$r['ID']] = $r;
+                }
+            }
+
+            // если нужно ограничить общее количество результатов, можно остановиться
+            if (count($results) >= $limit) {
+                break;
+            }
+        }
+
+        return array_values($results);
     }
 
     public function findNewRandomProducts(int $limit, int $categoryId): array
