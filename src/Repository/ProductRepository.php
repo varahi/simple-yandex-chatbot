@@ -15,6 +15,25 @@ class ProductRepository
         $this->pdo = PDOConnection::getInstance();
     }
 
+    private function naiveStemRussian(string $word): string
+    {
+        $word = mb_strtolower($word, 'UTF-8');
+        // Список окончаний от длинных к коротким
+        $endings = ['иями','ями','ами','ями','иях','ах','ях','ов','ев','ей','ия','ии','и','ы','а','я','ь','е'];
+        foreach ($endings as $e) {
+            if (mb_substr($word, -mb_strlen($e, 'UTF-8'), null, 'UTF-8') === $e) {
+                $stem = mb_substr($word, 0, mb_strlen($word, 'UTF-8') - mb_strlen($e, 'UTF-8'), 'UTF-8');
+                // не делаем слишком короткие стемы
+                if (mb_strlen($stem, 'UTF-8') >= 2) {
+                    return $stem;
+                }
+            }
+        }
+        return $word;
+    }
+
+    // @ToDo: try to use  https://phpmorphy.sourceforge.net/
+
     public function findProductsByQuery(string $query, int $limit): array
     {
         $keywords = $this->extractKeywords($query);
@@ -36,26 +55,47 @@ class ProductRepository
         $results = [];
 
         foreach ($keywords as $keyword) {
-            $search = '%' . $keyword . '%';
-            $stmt->bindValue(':q1', $search, PDO::PARAM_STR);
-            $stmt->bindValue(':q2', $search, PDO::PARAM_STR);
-            $stmt->bindValue(':q3', $search, PDO::PARAM_STR);
-            $stmt->bindValue(':q4', $search, PDO::PARAM_STR);
-            $stmt->bindValue(':active', 'Y', PDO::PARAM_STR);
-
-            $stmt->execute();
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // аккумулируем и устраняем дубликаты по ID
-            foreach ($rows as $r) {
-                if (!isset($results[$r['ID']])) {
-                    $results[$r['ID']] = $r;
-                }
+            $keyword = trim($keyword);
+            if ($keyword === '') {
+                continue;
             }
 
-            // если нужно ограничить общее количество результатов, можно остановиться
-            if (count($results) >= $limit) {
-                break;
+            // варианты поиска: оригинал + стем (если отличается)
+            $variants = [$keyword];
+            $stem = $this->naiveStemRussian($keyword);
+            if ($stem !== $keyword) {
+                $variants[] = $stem;
+            }
+
+            //file_put_contents('stem.log', "Stem: " . $variants . "\n", FILE_APPEND);
+            //file_put_contents('search.log', "Search: " . $stmt . "\n", FILE_APPEND);
+            //file_put_contents('variants.log', print_r($variants, true));
+
+            foreach (array_unique($variants) as $variant) {
+                $search = '%' . $variant . '%';
+
+                // Перепривязка параметров каждый раз — нормально
+                $search = '%' . $variant . '%';
+                $stmt->bindValue(':q1', $search, PDO::PARAM_STR);
+                $stmt->bindValue(':q2', $search, PDO::PARAM_STR);
+                $stmt->bindValue(':q3', $search, PDO::PARAM_STR);
+                $stmt->bindValue(':q4', $search, PDO::PARAM_STR);
+                $stmt->bindValue(':active', 'Y', PDO::PARAM_STR);
+                $stmt->execute();
+
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+                foreach ($rows as $r) {
+                    if (!isset($results[$r['ID']])) {
+                        $results[$r['ID']] = $r;
+                    }
+                }
+
+                if (count($results) >= $limit) {
+                    break 2; // выйти из обоих циклов
+                }
             }
         }
 
