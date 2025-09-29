@@ -20,6 +20,8 @@ class TelegramService
     {
         $url = "{$this->apiUrl}/bot{$this->token}/sendMessage";
 
+        //file_put_contents('telegram.log', "Stem: " . $url . "\n", FILE_APPEND);
+
         $payload = [
             'chat_id' => $chatId,
             'text' => $text,

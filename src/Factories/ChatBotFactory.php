@@ -21,7 +21,7 @@ class ChatBotFactory
         })();
 
         //$history = new HistoryService($config['history_file'] ?? __DIR__ . '/../../storage/history.json', $config['max_history'] ?? 5);
-
+        $history = new HistoryService($config);
         return new ChatBot(
             new HistoryService($config),
             new TopicService($config),
@@ -30,7 +30,7 @@ class ChatBotFactory
                 new TopicService($config),
                 new HistoryService($config),
                 new ProductService(),
-                //new TelegramService($config['telegram_token'], $config['telegram_chat_id'], $history)
+                new TelegramService($config['telegram_token'], $config['operator_chat_id'], $history)
             ),
             new SessionService()
         );

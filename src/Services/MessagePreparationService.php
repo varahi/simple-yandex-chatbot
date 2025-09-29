@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\MessagePreparerInterface;
 use App\Services\Product\ProductService;
+use App\Services\SessionService;
 
 class MessagePreparationService implements MessagePreparerInterface
 {
@@ -12,7 +13,7 @@ class MessagePreparationService implements MessagePreparerInterface
         private TopicService $topicService,
         private HistoryService $historyService,
         private ProductService $productService,
-        //private TelegramService $telegramService
+        private TelegramService $telegramService
     ) {
     }
 
@@ -25,15 +26,15 @@ class MessagePreparationService implements MessagePreparerInterface
             return [['role' => 'assistant', 'text' => '<div class="products-card"> ' . $answer . '</div>']]; // ← Только готовый ответ
         }
 
-//        $userId = \App\Services\SessionService::getUserId();
-//        $this->historyService->updateHistory($userId, 'user', $userMessage);
-//        if ($this->shouldTransferToOperator($userMessage, $userId)) {
-//            // уведомляем оператора (с контекстом)
-//            $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
-//
-//            // отвечаем пользователю системным сообщением (можно настроить стили HTML)
-//            return [['role' => 'assistant', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
-//        }
+        $userId = SessionService::getUserId();
+        $this->historyService->updateHistory($userId, 'user', $userMessage);
+        if ($this->shouldTransferToOperator($userMessage, $userId)) {
+            // уведомляем оператора (с контекстом)
+            $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
+
+            // отвечаем пользователю системным сообщением (можно настроить стили HTML)
+            return [['role' => 'assistant', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
+        }
 
         // 2. Отображаем новинки
         if ($this->isNewProductQuestion($userMessage)) {
