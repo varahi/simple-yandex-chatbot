@@ -12,8 +12,6 @@ class MessagePreparationService implements MessagePreparerInterface
         private TopicService $topicService,
         private HistoryService $historyService,
         private ProductService $productService,
-        private YandexSearchService $yandexSearchService,
-        private array $config
     ) {
     }
 
@@ -45,19 +43,10 @@ class MessagePreparationService implements MessagePreparerInterface
             // return $this->prepareRejectionResponse();
         }
 
-//        $searchResults = $this->yandexSearchService->search($userMessage, 3);
-//        //file_put_contents('yandex.log', "Result: " . $searchResults . "\n", FILE_APPEND);
-//        file_put_contents('yandex.log', print_r($searchResults, true));
-//
-//        // 5. ToDo:  берем данные из яндекса.
-//        $searchResults = $this->yandexSearchService->search($userMessage, 3);
-//        if (!empty($searchResults)) {
-//            $answer = $this->formatSearchResults($searchResults, $userMessage);
-//            return [['role' => 'assistant', 'text' => $answer]];
-//        }
-
         // 6. Только если не нашли в FAQ - готовим запрос к YandexGPT
-        return $this->prepareFullContext($userMessage);
+        //return $this->prepareFullContext($userMessage);
+        // В данной реализации полностью отключаем ИИ и перенаправляем запрос
+        return $this->prepareRejectionResponse();
     }
 
     private function formatSearchResults(array $results, string $query): string
