@@ -12,6 +12,7 @@ class MessagePreparationService implements MessagePreparerInterface
         private TopicService $topicService,
         private HistoryService $historyService,
         private ProductService $productService,
+        //private TelegramService $telegramService
     ) {
     }
 
@@ -23,6 +24,16 @@ class MessagePreparationService implements MessagePreparerInterface
             //return $this->prepareFaqResponse($answer);
             return [['role' => 'assistant', 'text' => '<div class="products-card"> ' . $answer . '</div>']]; // ← Только готовый ответ
         }
+
+//        $userId = \App\Services\SessionService::getUserId();
+//        $this->historyService->updateHistory($userId, 'user', $userMessage);
+//        if ($this->shouldTransferToOperator($userMessage, $userId)) {
+//            // уведомляем оператора (с контекстом)
+//            $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
+//
+//            // отвечаем пользователю системным сообщением (можно настроить стили HTML)
+//            return [['role' => 'assistant', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
+//        }
 
         // 2. Отображаем новинки
         if ($this->isNewProductQuestion($userMessage)) {
@@ -136,5 +147,30 @@ class MessagePreparationService implements MessagePreparerInterface
         $messages[] = ['role' => 'user', 'text' => $userMessage];
 
         return $messages;
+    }
+
+    private function shouldTransferToOperator(string $userMessage, string $userId): bool
+    {
+        $triggerPhrases = [
+            'оператор', 'человек', 'менеджер', 'позовите', 'соедините с',
+            'не понимаю', 'помогите', 'ваш ответ не помог', 'живой'
+        ];
+
+        foreach ($triggerPhrases as $phrase) {
+            if (stripos($userMessage, $phrase) !== false) {
+                return true;
+            }
+        }
+
+        // Если бот уже несколько раз не смог помочь
+        $history = $this->historyService->getHistory($userId);
+        $botResponses = array_filter($history, fn($item) => $item['role'] === 'assistant');
+        $userQuestions = array_filter($history, fn($item) => $item['role'] === 'user');
+
+        if (count($userQuestions) >= 3 && count($botResponses) >= 2) {
+            return true; // Передаем оператору после 3 вопросов
+        }
+
+        return false;
     }
 }

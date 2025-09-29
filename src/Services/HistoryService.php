@@ -10,7 +10,7 @@ class HistoryService
 
     private $config;
 
-    private $storageFile = __DIR__.'/history.json';
+    private $storageFile = __DIR__.'/../../storage/history.json';
 
     public function __construct(
         array $config,
@@ -21,33 +21,39 @@ class HistoryService
         }
     }
 
-    public function updateHistory(string $role, string $text): void
+    public function updateHistory(string $userId, string $role, string $text): void
     {
-        try {
-            $this->history[] = [
-                'role' => $role,
-                'text' => $text,
-                'time' => date('H:i:s') // Формат: "14:30:22"
-            ];
-
-            // Оставляем только последние 5 сообщений
-            if (count($this->history) > $this->config['max_history']) {
-                array_shift($this->history);
-            }
-
-        } catch (Exception $e) {
-            error_log('History save error: ' . $e->getMessage());
+        if (!isset($this->history[$userId])) {
+            $this->history[$userId] = [];
         }
+
+        $this->history[$userId][] = [
+            'role' => $role,
+            'text' => $text,
+            'time' => date('H:i:s'),
+        ];
+
+        // Оставляем только последние $maxHistory сообщений для этого пользователя
+        if (count($this->history[$userId]) > $this->config['max_history']) {
+            array_shift($this->history[$userId]);
+        }
+
+        $this->persist();
     }
 
-    public function getHistory(): array
+    public function getHistory(string $userId): array
     {
-        return $this->history;
+        return $this->history[$userId] ?? [];
     }
 
-    public function clearHistory(): void
+    public function clearHistory(string $userId): void
     {
-        $this->history = [];
-        file_put_contents($this->storageFile, '[]'); // Очищаем файл
+        unset($this->history[$userId]);
+        $this->persist();
+    }
+
+    private function persist(): void
+    {
+        file_put_contents($this->storageFile, json_encode($this->history, JSON_UNESCAPED_UNICODE));
     }
 }

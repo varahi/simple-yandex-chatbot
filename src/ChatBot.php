@@ -48,8 +48,8 @@ class ChatBot
         $response = $messages[0]['text'];
 
         $userId = $this->sessionService->getUserId();
-        $this->historyService->updateHistory('user', $userMessage);
-        $this->historyService->updateHistory('assistant', $response);
+        $this->historyService->updateHistory($userId,'user', $userMessage);
+        $this->historyService->updateHistory($userId,'assistant', $response);
 
         return $response;
     }

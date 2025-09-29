@@ -16,5 +16,7 @@ return [
         'allowed' => explode(',', $_ENV['ALLOWED_TOPICS']),
         'forbidden' => explode(',', $_ENV['FORBIDDEN_WORDS'])
     ],
-    'max_history' => 5
+    'max_history' => 5,
+    'telegram_token' => $_ENV['TELEGRAM_TOKEN'],
+    'operator_chat_id' => $_ENV['TELEGRAM_CHAT_ID'],
 ];
