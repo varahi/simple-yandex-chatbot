@@ -7,9 +7,8 @@ use App\Services\FaqService;
 use App\Services\HistoryService;
 use App\Services\MessagePreparationService;
 use App\Services\Product\ProductService;
+use App\Services\SessionService;
 use App\Services\TopicService;
-use App\Services\YandexSearchService;
-use App\YandexGptClient;
 
 class ChatBotFactory
 {
@@ -21,7 +20,6 @@ class ChatBotFactory
         })();
 
         return new ChatBot(
-            new YandexGptClient($config['yandex']),
             new HistoryService($config),
             new TopicService($config),
             new MessagePreparationService(
@@ -29,7 +27,8 @@ class ChatBotFactory
                 new TopicService($config),
                 new HistoryService($config),
                 new ProductService(),
-            )
+            ),
+            new SessionService()
         );
     }
 }
