@@ -10,24 +10,16 @@ use App\Services\TopicService;
 
 class ChatBot
 {
-    private HistoryService $historyService;
-
     private TopicService $topicService;
 
     private MessagePreparerInterface $messagePreparer;
 
-    private SessionService $sessionService;
-
     public function __construct(
-        HistoryService $historyService,
         TopicService $topicService,
         MessagePreparerInterface $messagePreparer,
-        SessionService $sessionService
     ) {
-        $this->historyService = $historyService;
         $this->topicService = $topicService;
         $this->messagePreparer = $messagePreparer;
-        $this->sessionService = $sessionService;
     }
 
     public function handleMessage(string $userMessage): string
@@ -46,11 +38,6 @@ class ChatBot
 //        }
 
         $response = $messages[0]['text'];
-
-        $userId = $this->sessionService->getUserId();
-        $this->historyService->updateHistory($userId,'user', $userMessage);
-        $this->historyService->updateHistory($userId,'assistant', $response);
-
         return $response;
     }
 }

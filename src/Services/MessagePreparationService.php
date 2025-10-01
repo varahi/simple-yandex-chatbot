@@ -19,21 +19,19 @@ class MessagePreparationService implements MessagePreparerInterface
 
     public function prepare(string $userMessage): array
     {
+        $userId = SessionService::getUserId();
 
         // 1. Проверка FAQ
         if ($answer = $this->faqService->getPredefinedAnswer($userMessage)) {
-            //return $this->prepareFaqResponse($answer);
+            //return $this->prepareFaqResponse($answer, $userId);
             return [['role' => 'assistant', 'text' => '<div class="products-card"> ' . $answer . '</div>']]; // ← Только готовый ответ
         }
 
-        $userId = SessionService::getUserId();
-        $this->historyService->updateHistory($userId, 'user', $userMessage);
         if ($this->shouldTransferToOperator($userMessage, $userId)) {
+            $this->historyService->updateHistory($userId, 'operator', $userMessage);
             // уведомляем оператора (с контекстом)
             $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
-
-            // отвечаем пользователю системным сообщением (можно настроить стили HTML)
-            return [['role' => 'assistant', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
+            return [['role' => 'operator', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
         }
 
         // 2. Отображаем новинки
@@ -102,14 +100,14 @@ class MessagePreparationService implements MessagePreparerInterface
         return false;
     }
 
-    private function prepareFaqResponse(string $answer): array
+    private function prepareFaqResponse(string $answer, string $userId): array
     {
         $messages = [
             ['role' => 'system', 'text' => 'Ты — консультант, отвечаешь готовыми шаблонами'],
             ['role' => 'assistant', 'text' => $answer]
         ];
 
-        foreach ($this->historyService->getHistory() as $item) {
+        foreach ($this->historyService->getHistory($userId) as $item) {
             $messages[] = ['role' => $item['role'], 'text' => $item['text']];
         }
 

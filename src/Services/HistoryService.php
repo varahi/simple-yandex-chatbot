@@ -27,18 +27,23 @@ class HistoryService
             $this->history[$userId] = [];
         }
 
-        $this->history[$userId][] = [
-            'role' => $role,
-            'text' => $text,
-            'time' => date('H:i:s'),
-        ];
+        file_put_contents('updateHistory.log', "Role: " . $role . "\n", FILE_APPEND);
 
-        // Оставляем только последние $maxHistory сообщений для этого пользователя
-        if (count($this->history[$userId]) > $this->config['max_history']) {
-            array_shift($this->history[$userId]);
+        if($role == 'operator') {
+            $this->history[$userId][] = [
+                'role' => $role,
+                'text' => $text,
+                'time' => date('H:i:s'),
+            ];
+
+            // Оставляем только последние $maxHistory сообщений для этого пользователя
+            if (count($this->history[$userId]) > $this->config['max_history']) {
+                array_shift($this->history[$userId]);
+            }
+
+            $this->persist();
         }
 
-        $this->persist();
     }
 
     public function getHistory(string $userId): array
