@@ -21,16 +21,21 @@ class MessagePreparationService implements MessagePreparerInterface
     {
         $userId = SessionService::getUserId();
 
+        // 0. Если сессия с оператором уже активна — все запросы идут оператору
+        if ($this->historyService->isOperatorSession($userId)) {
+            $this->historyService->updateHistory($userId, 'operator', $userMessage);
+            $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
+            return [['role' => 'operator', 'text' => '<div class="system-note">✅ Сообщение отправлено оператору.</div>']];
+        }
+
         // 1. Проверка FAQ
         if ($answer = $this->faqService->getPredefinedAnswer($userMessage)) {
-            //return $this->prepareFaqResponse($answer, $userId);
             return [['role' => 'assistant', 'text' => '<div class="products-card"> ' . $answer . '</div>']]; // ← Только готовый ответ
         }
 
-        // 2. Вызов оператора
+        // 2. Проверка триггерных фраз // Вызов оператора
         if ($this->shouldTransferToOperator($userMessage, $userId)) {
             $this->historyService->updateHistory($userId, 'operator', $userMessage);
-            // уведомляем оператора (с контекстом)
             $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
             return [['role' => 'operator', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
         }
