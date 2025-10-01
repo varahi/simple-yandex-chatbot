@@ -152,15 +152,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('clear-btn')?.addEventListener('click', clearHistory);
 });
 
-function pollOperatorMessages() {
-    fetch('/get_operator_messages.php')
-        .then(r => r.json())
-        .then(data => {
-            if (data.messages) {
-                renderMessages(data.messages);
-            }
-        })
-        .catch(console.error);
+async function initUser() {
+    try {
+        const res = await fetch('/get_user.php');
+        const data = await res.json();
+        window.currentUserId = data.userId;
+        console.log("User ID:", window.currentUserId);
+
+        // после этого можно запускать polling сообщений от оператора
+        startPolling();
+    } catch (err) {
+        console.error("Ошибка получения userId:", err);
+    }
 }
 
-setInterval(pollOperatorMessages, 3000); // каждые 3 секунды
+function startPolling() {
+    setInterval(() => {
+        fetch(`/get_operator_messages.php?user_id=${window.currentUserId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.messages) {
+                    renderMessages(data.messages); // твоя функция рендера
+                }
+            });
+    }, 3000);
+}
+
+// вызов при старте
+initUser();

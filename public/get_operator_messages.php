@@ -13,7 +13,9 @@ if (!$userId) {
     exit;
 }
 
-$operatorHistory = new HistoryService();
-$messages = $operatorHistory->getHistory($userId);
+$config = require __DIR__ . '/../config/config.php';
+$history = new HistoryService($config);
+
+$messages = $history->getHistory($userId);
 
 echo json_encode(['messages' => $messages], JSON_UNESCAPED_UNICODE);
