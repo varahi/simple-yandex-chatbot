@@ -56,12 +56,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Очистка истории
     function clearHistory() {
-        if (confirm('Очистить всю историю чата?')) {
+        if (confirm('Очистить всю историю чата и оператора?')) {
+            // Чистим localStorage
             localStorage.removeItem('chatHistory');
             chatHistory = [
                 { role: 'bot', content: 'История очищена. Чем могу помочь?' }
             ];
             loadHistory();
+
+            // Чистим историю оператора на сервере
+            fetch('/clear_operator_history.php', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => console.log(data))
+                .catch(err => console.error('Ошибка очистки истории оператора', err));
         }
     }
 
