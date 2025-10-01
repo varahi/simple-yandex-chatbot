@@ -17,27 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Отображение сообщения
-    // function displayMessage(role, content, saveToHistory = true) {
-    //     const messageDiv = document.createElement('div');
-    //     messageDiv.className = `message ${role}-message`;
-    //     messageDiv.textContent = content;
-    //     chatMessages.appendChild(messageDiv);
-    //
-    //     if (saveToHistory) {
-    //         chatHistory.push({ role, content });
-    //         saveHistory();
-    //     }
-    //
-    //     scrollToBottom();
-    // }
-
     function displayMessage(role, content, saveToHistory = true) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role}-message`;
 
         // Применяем Markdown-разметку
         messageDiv.innerHTML = renderMarkdown(content);
-        //messageDiv.innerHTML = renderContent(content);
 
         // Подсветка синтаксиса (если подключена библиотека)
         if (typeof hljs !== 'undefined') {
@@ -48,11 +33,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         chatMessages.appendChild(messageDiv);
 
-        // Сохраняем оригинальный текст (без HTML) в историю
+        // Сохраняем историю
         if (saveToHistory) {
             chatHistory.push({
                 role,
-                content, // Сохраняем оригинальный Markdown
+                content,
                 timestamp: new Date().toISOString()
             });
             saveHistory();
@@ -61,22 +46,9 @@ document.addEventListener('DOMContentLoaded', function() {
         scrollToBottom();
     }
 
-    function renderContent(content) {
-        // Проверяем, если это уже HTML
-        const hasHtmlTags = /<[a-z][\s\S]*>/i.test(content);
-
-        if (hasHtmlTags) {
-            return content; // Возвращаем HTML как есть
-        } else {
-            return renderMarkdown(content); // Преобразуем Markdown
-        }
-    }
-
-    // Сохранение истории в localStorage
+    // Сохранение истории
     function saveHistory() {
         localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-
-        // Ограничиваем историю (последние 50 сообщений)
         if (chatHistory.length > 50) {
             chatHistory = chatHistory.slice(-50);
         }
@@ -93,15 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    //Отправка сообщения
+    // Отправка сообщения
     async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;
 
         displayMessage('user', message);
         userInput.value = '';
-
-        // Показать индикатор
         showTypingIndicator();
 
         try {
@@ -113,25 +83,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
             displayMessage('bot', data.response);
-
         } catch (error) {
             displayMessage('bot', '⚠️ Ошибка соединения');
         } finally {
-            // Скрыть индикатор после ответа
             hideTypingIndicator();
         }
     }
 
-    // Функции для управления индикатором
+    // Индикатор "печатает"
     function showTypingIndicator() {
         const indicator = document.getElementById('typing-indicator');
         indicator.style.display = 'flex';
         scrollToBottom();
     }
-
     function hideTypingIndicator() {
-        const indicator = document.getElementById('typing-indicator');
-        indicator.style.display = 'none';
+        document.getElementById('typing-indicator').style.display = 'none';
     }
 
     // Прокрутка вниз
@@ -139,44 +105,55 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    // --- 🔥 Polling сообщений от оператора ---
+    let lastOperatorMessages = [];
+
+    function startPolling() {
+        setInterval(async () => {
+            if (!window.currentUserId) return;
+
+            try {
+                const res = await fetch(`/get_operator_messages.php?user_id=${window.currentUserId}`);
+                const data = await res.json();
+
+                if (data.messages && data.messages.length > 0) {
+                    // Берём только новые сообщения (чтобы не дублировать)
+                    const newMessages = data.messages.filter(
+                        msg => !lastOperatorMessages.some(m => m.text === msg.text && m.time === msg.time)
+                    );
+
+                    newMessages.forEach(msg => {
+                        displayMessage('operator', msg.text);
+                    });
+
+                    lastOperatorMessages = data.messages;
+                }
+            } catch (e) {
+                console.error("Ошибка при получении сообщений оператора:", e);
+            }
+        }, 3000);
+    }
+
     // Инициализация
     loadHistory();
-
-    // Обработчики событий
     sendButton.addEventListener('click', sendMessage);
     userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
-
-    // Кнопка очистки (добавьте в HTML)
     document.getElementById('clear-btn')?.addEventListener('click', clearHistory);
-});
 
-async function initUser() {
-    try {
-        const res = await fetch('/get_user.php');
-        const data = await res.json();
-        window.currentUserId = data.userId;
-        console.log("User ID:", window.currentUserId);
-
-        // после этого можно запускать polling сообщений от оператора
-        startPolling();
-    } catch (err) {
-        console.error("Ошибка получения userId:", err);
+    // Получение userId → запуск polling
+    async function initUser() {
+        try {
+            const res = await fetch('/get_user.php');
+            const data = await res.json();
+            window.currentUserId = data.userId;
+            console.log("User ID:", window.currentUserId);
+            startPolling();
+        } catch (err) {
+            console.error("Ошибка получения userId:", err);
+        }
     }
-}
 
-function startPolling() {
-    setInterval(() => {
-        fetch(`/get_operator_messages.php?user_id=${window.currentUserId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.messages) {
-                    renderMessages(data.messages); // твоя функция рендера
-                }
-            });
-    }, 3000);
-}
-
-// вызов при старте
-initUser();
+    initUser();
+});
