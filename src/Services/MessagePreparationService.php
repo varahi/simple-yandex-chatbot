@@ -27,20 +27,7 @@ class MessagePreparationService implements MessagePreparerInterface
             return [['role' => 'assistant', 'text' => '<div class="products-card"> ' . $answer . '</div>']]; // ← Только готовый ответ
         }
 
-        // 2. Отображаем новинки
-        if ($this->isNewProductQuestion($userMessage)) {
-            $products = $this->productService->getNewRandomProducts();
-            $answer = $this->productService->generateProductAnswer($userMessage, $products, 'Наши новинки');
-            return [['role' => 'assistant', 'text' => $answer]];
-        }
-
-        // 3. Берем данные из БД
-        if ($products = $this->productService->getProductsByQuery($userMessage)) {
-            $answer = $this->productService->generateProductAnswer($userMessage, $products, 'Наши товары');
-            return [['role' => 'assistant', 'text' => $answer]];
-        }
-
-        // Вызов оператора
+        // 2. Вызов оператора
         if ($this->shouldTransferToOperator($userMessage, $userId)) {
             $this->historyService->updateHistory($userId, 'operator', $userMessage);
             // уведомляем оператора (с контекстом)
@@ -48,16 +35,23 @@ class MessagePreparationService implements MessagePreparerInterface
             return [['role' => 'operator', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
         }
 
-        // 4. Проверка тематики
-        //if (!$this->topicService->isAboutShopping($userMessage)) {
-            //return [['role' => 'assistant', 'text' => 'Это вопрос к другому специалисту.']];
-            // return $this->prepareRejectionResponse();
-        //}
+        // 3. Отображаем новинки
+        if ($this->isNewProductQuestion($userMessage)) {
+            $products = $this->productService->getNewRandomProducts();
+            $answer = $this->productService->generateProductAnswer($userMessage, $products, 'Наши новинки');
+            return [['role' => 'assistant', 'text' => $answer]];
+        }
 
-        // 6. Только если не нашли в FAQ - готовим запрос к YandexGPT
-        //return $this->prepareFullContext($userMessage);
-        // В данной реализации полностью отключаем ИИ и перенаправляем запрос
-        return $this->prepareRejectionResponse();
+        // 4. Берем данные из БД
+        if ($products = $this->productService->getProductsByQuery($userMessage)) {
+            $answer = $this->productService->generateProductAnswer($userMessage, $products, 'Наши товары');
+            return [['role' => 'assistant', 'text' => $answer]];
+        }
+
+        // 5. Вызываем оператора если нет подходящих ответов
+        $this->historyService->updateHistory($userId, 'operator', $userMessage);
+        $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
+        return [['role' => 'operator', 'text' => '<div class="system-note">✅ Ответ на вопрос не найден, передаем оператору.</div>']];
     }
 
     private function formatSearchResults(array $results, string $query): string
