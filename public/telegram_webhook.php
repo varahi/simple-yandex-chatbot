@@ -14,7 +14,7 @@ $history = new HistoryService($config);
 $update = json_decode(file_get_contents("php://input"), true);
 
 // Логируем для отладки
-//file_put_contents(__DIR__.'/telegram_log.txt', print_r($update,true), FILE_APPEND);
+file_put_contents(__DIR__.'/telegram_log.txt', print_r($update,true), FILE_APPEND);
 
 // Достаём данные
 if (!empty($update['message'])) {

@@ -4,8 +4,6 @@ namespace App;
 
 use App\Contracts\MessagePreparerInterface;
 use App\Exceptions\ForbiddenTopicException;
-use App\Services\HistoryService;
-use App\Services\SessionService;
 use App\Services\TopicService;
 
 class ChatBot

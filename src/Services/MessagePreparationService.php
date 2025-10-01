@@ -27,13 +27,6 @@ class MessagePreparationService implements MessagePreparerInterface
             return [['role' => 'assistant', 'text' => '<div class="products-card"> ' . $answer . '</div>']]; // ← Только готовый ответ
         }
 
-        if ($this->shouldTransferToOperator($userMessage, $userId)) {
-            $this->historyService->updateHistory($userId, 'operator', $userMessage);
-            // уведомляем оператора (с контекстом)
-            $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
-            return [['role' => 'operator', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
-        }
-
         // 2. Отображаем новинки
         if ($this->isNewProductQuestion($userMessage)) {
             $products = $this->productService->getNewRandomProducts();
@@ -47,11 +40,19 @@ class MessagePreparationService implements MessagePreparerInterface
             return [['role' => 'assistant', 'text' => $answer]];
         }
 
+        // Вызов оператора
+        if ($this->shouldTransferToOperator($userMessage, $userId)) {
+            $this->historyService->updateHistory($userId, 'operator', $userMessage);
+            // уведомляем оператора (с контекстом)
+            $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
+            return [['role' => 'operator', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
+        }
+
         // 4. Проверка тематики
-        if (!$this->topicService->isAboutShopping($userMessage)) {
+        //if (!$this->topicService->isAboutShopping($userMessage)) {
             //return [['role' => 'assistant', 'text' => 'Это вопрос к другому специалисту.']];
             // return $this->prepareRejectionResponse();
-        }
+        //}
 
         // 6. Только если не нашли в FAQ - готовим запрос к YandexGPT
         //return $this->prepareFullContext($userMessage);

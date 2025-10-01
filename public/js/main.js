@@ -151,3 +151,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Кнопка очистки (добавьте в HTML)
     document.getElementById('clear-btn')?.addEventListener('click', clearHistory);
 });
+
+function pollOperatorMessages() {
+    fetch('/get_operator_messages.php')
+        .then(r => r.json())
+        .then(data => {
+            if (data.messages) {
+                renderMessages(data.messages);
+            }
+        })
+        .catch(console.error);
+}
+
+setInterval(pollOperatorMessages, 3000); // каждые 3 секунды
