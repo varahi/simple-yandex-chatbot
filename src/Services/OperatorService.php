@@ -16,18 +16,24 @@ class OperatorService
         $text = $message['text'];
         $chatId = $message['chat']['id'];
 
-        // Ожидаем формат: /reply user_<id> Ответ
         if (preg_match('/^\/reply\s+(\S+)\s+(.+)/u', $text, $matches)) {
-            $userId = $matches[1];        // user_011372f852528d9f
-            $reply  = $matches[2];        // Тестовый ответ
+            $userId = $matches[1];
+            $reply  = $matches[2];
 
-            // Сохраняем ответ в историю диалога
+            // сохраняем ответ в историю
             $this->historyService->updateHistory($userId, 'operator', $reply);
 
-            // При желании можно отправить оператору подтверждение
-            $this->sendTelegramMessage($chatId, "Ответ отправлен пользователю $userId");
+            // закрываем сессию, т.к. оператор ответил
+            $this->historyService->closeOperatorSession($userId);
+
+            $this->sendTelegramMessage($chatId, "✅ Ответ отправлен пользователю $userId. Сессия закрыта.");
+        } elseif (preg_match('/^\/end\s+(\S+)/u', $text, $matches)) {
+            $userId = $matches[1];
+            $this->historyService->closeOperatorSession($userId);
+
+            $this->sendTelegramMessage($chatId, "🚪 Сессия с пользователем $userId завершена.");
         } else {
-            $this->sendTelegramMessage($chatId, "Неверный формат. Используйте: /reply user_<id> ваш текст");
+            $this->sendTelegramMessage($chatId, "Неверный формат. Используйте: /reply user_<id> ваш текст или /end user_<id>");
         }
     }
 

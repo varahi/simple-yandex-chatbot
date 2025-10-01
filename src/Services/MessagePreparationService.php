@@ -25,7 +25,8 @@ class MessagePreparationService implements MessagePreparerInterface
         if ($this->historyService->isOperatorSession($userId)) {
             $this->historyService->updateHistory($userId, 'operator', $userMessage);
             $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
-            return [['role' => 'operator', 'text' => '<div class="system-note">✅ Сообщение отправлено оператору.</div>']];
+            //return [['role' => 'operator', 'text' => '<div class="system-note">✅ Сообщение отправлено оператору.</div>']];
+            return [['role' => 'operator', 'text' => '<div class="system-note">📩 Сообщение передано оператору.</div>']];
         }
 
         // 1. Проверка FAQ
@@ -37,6 +38,10 @@ class MessagePreparationService implements MessagePreparerInterface
         if ($this->shouldTransferToOperator($userMessage, $userId)) {
             $this->historyService->updateHistory($userId, 'operator', $userMessage);
             $this->telegramService->notifyOperatorNewMessage($userId, $userMessage);
+
+            // открываем сессию
+            $this->historyService->openOperatorSession($userId);
+
             return [['role' => 'operator', 'text' => '<div class="system-note">✅ Запрос передан оператору — вы получите ответ в чате.</div>']];
         }
 
