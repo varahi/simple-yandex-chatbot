@@ -10,6 +10,29 @@ use App\Services\Product\ProductService;
 use App\Services\TelegramService;
 use App\Services\TopicService;
 
+//class ChatBotFactory
+//{
+//    public static function create(): ChatBot
+//    {
+//        $config = (static function () {
+//            static $config;
+//            return $config ??= include __DIR__ . '/../../config/config.php';
+//        })();
+//
+//        $history = new HistoryService($config);
+//        return new ChatBot(
+//            new TopicService($config),
+//            new MessagePreparationService(
+//                new FaqService(include __DIR__ . '/../../config/faq.php'),
+//                new TopicService($config),
+//                new HistoryService($config),
+//                new ProductService(),
+//                new TelegramService($config['telegram_token'], $config['operator_chat_id'], $history)
+//            )
+//        );
+//    }
+//}
+
 class ChatBotFactory
 {
     public static function create(): ChatBot
@@ -19,15 +42,17 @@ class ChatBotFactory
             return $config ??= include __DIR__ . '/../../config/config.php';
         })();
 
-        $history = new HistoryService($config);
+        // Создаем один экземпляр HistoryService
+        $historyService = new HistoryService($config);
+
         return new ChatBot(
             new TopicService($config),
             new MessagePreparationService(
                 new FaqService(include __DIR__ . '/../../config/faq.php'),
                 new TopicService($config),
-                new HistoryService($config),
+                $historyService, // Передаем тот же экземпляр
                 new ProductService(),
-                new TelegramService($config['telegram_token'], $config['operator_chat_id'], $history)
+                new TelegramService($config['telegram_token'], $config['operator_chat_id'], $historyService)
             )
         );
     }

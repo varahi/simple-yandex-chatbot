@@ -8,13 +8,28 @@ use App\Services\SessionService;
 
 class MessagePreparationService implements MessagePreparerInterface
 {
+    private $faqService;
+
+    private $topicService;
+
+    private $historyService;
+
+    private $productService;
+
+    private $telegramService;
+
     public function __construct(
-        private FaqService $faqService,
-        private TopicService $topicService,
-        private HistoryService $historyService,
-        private ProductService $productService,
-        private TelegramService $telegramService
+        FaqService $faqService,
+        TopicService $topicService,
+        HistoryService $historyService,
+        ProductService $productService,
+        TelegramService $telegramService
     ) {
+        $this->faqService = $faqService;
+        $this->topicService = $topicService;
+        $this->historyService = $historyService;
+        $this->productService = $productService;
+        $this->telegramService = $telegramService;
     }
 
     public function prepare(string $userMessage): array

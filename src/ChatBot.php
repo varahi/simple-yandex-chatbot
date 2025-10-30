@@ -14,7 +14,7 @@ class ChatBot
 
     public function __construct(
         TopicService $topicService,
-        MessagePreparerInterface $messagePreparer,
+        MessagePreparerInterface $messagePreparer
     ) {
         $this->topicService = $topicService;
         $this->messagePreparer = $messagePreparer;

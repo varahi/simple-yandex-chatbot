@@ -16,12 +16,13 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
+        "php": ">=7.4",
         "guzzlehttp/guzzle": "^7.9",
         "vlucas/phpdotenv": "^5.6",
         "ext-pdo": "*",
         "ext-libxml": "*",
         "ext-dom": "*",
-      "ext-curl": "*"
+      "ext-curl": "*",
+      "ext-json": "*"
     }
 }

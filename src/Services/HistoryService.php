@@ -10,12 +10,13 @@ class HistoryService
 
     private $config;
 
-    private $storageFile = __DIR__.'/../../storage/history.json';
+    private $storageFile;
 
-    public function __construct(
-        array $config,
-    ) {
+    public function __construct(array $config)
+    {
         $this->config = $config;
+        $this->storageFile = __DIR__ . '/../../storage/history.json';
+
         if (file_exists($this->storageFile)) {
             $this->history = json_decode(file_get_contents($this->storageFile), true) ?: [];
         }

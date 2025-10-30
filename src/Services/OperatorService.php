@@ -5,10 +5,11 @@ namespace App\Services;
 class OperatorService
 {
 
-    public function __construct(
-        private readonly HistoryService $historyService,
-    )
+    private $historyService;
+
+    public function __construct(HistoryService $historyService)
     {
+        $this->historyService = $historyService;
     }
 
     public function processOperatorMessage(array $message): void

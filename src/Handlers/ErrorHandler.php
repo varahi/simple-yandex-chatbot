@@ -9,25 +9,26 @@ class ErrorHandler
 {
     public function handle(\Throwable $e): array
     {
-        return match (true) {
-            $e instanceof InvalidMessageException => [
+        if ($e instanceof InvalidMessageException) {
+            return [
                 'error' => $e->getMessage(),
                 'code' => 422,
                 'details' => ['field' => 'message']
-            ],
-            $e instanceof ForbiddenTopicException => [
+            ];
+        } elseif ($e instanceof ForbiddenTopicException) {
+            return [
                 'error' => $e->getMessage(),
                 'code' => 403,
                 'suggestions' => ['Попробуйте спросить о доставке или оплате']
-            ],
-            default => [
+            ];
+        } else {
+            return [
                 'error' => 'Внутренняя ошибка сервера',
                 'code' => 500,
                 'request_id' => uniqid()
-            ]
-        };
+            ];
+        }
     }
-
 
     public function sendResponse(array $errorData): void
     {

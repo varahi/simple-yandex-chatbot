@@ -8,9 +8,12 @@ use App\Exceptions\ForbiddenTopicException;
 
 class ChatRequestHandler
 {
-    public function __construct(
-        private ChatBot $bot
+
+    private $bot;
+
+    public function __construct(ChatBot $bot
     ) {
+        $this->bot = $bot;
     }
 
 

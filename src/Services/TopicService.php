@@ -7,7 +7,7 @@ class TopicService
     private $config;
 
     public function __construct(
-        array $config,
+        array $config
     ) {
         $this->config = $config;
     }

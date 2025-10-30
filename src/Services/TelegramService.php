@@ -16,7 +16,10 @@ class TelegramService
         $this->history = $history;
     }
 
-    public function sendMessage(string|int $chatId, string $text, bool $html = true): bool
+    /**
+     * @param string|int $chatId
+     */
+    public function sendMessage($chatId, string $text, bool $html = true): bool
     {
         $url = "{$this->apiUrl}/bot{$this->token}/sendMessage";
         $payload = [

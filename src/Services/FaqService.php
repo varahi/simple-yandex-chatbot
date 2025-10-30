@@ -7,7 +7,7 @@ class FaqService
     private $faq;
 
     public function __construct(
-        array $faq,
+        array $faq
     ) {
         $this->faq = $faq;
     }
